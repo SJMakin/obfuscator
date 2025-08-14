@@ -3,18 +3,19 @@
  * Build orchestrator:
  * - fast: emcc direct to asm.js (Docker Emscripten 1.38.45 fastcomp)
  * - hard: Tigress transforms (Flatten + Virtualize) then emcc to asm.js
+ * - simple: emcc direct to asm.js (simple Docker image without Tigress)
  *
  * Requirements:
  * - Docker Desktop (Linux containers) available on PATH
- * - Image built: npm run docker:build-image
+ * - Image built: npm run docker:build-image (for fast/hard) or npm run docker:build-image-simple (for simple)
  */
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 const mode = (process.argv[2] || 'fast').toLowerCase();
-if (!['fast', 'hard'].includes(mode)) {
-  console.error('Usage: node scripts/build.mjs [fast|hard]');
+if (!['fast', 'hard', 'simple'].includes(mode)) {
+  console.error('Usage: node scripts/build.mjs [fast|hard|simple]');
   process.exit(2);
 }
 
@@ -31,8 +32,10 @@ if (!hasDocker()) {
 }
 
 // Ensure image exists; if not, instruct user to build it
-if (!hasDockerImage('asmjs-tigress')) {
-  console.error('Docker image asmjs-tigress not found. Run: npm run docker:build-image');
+const imageName = mode === 'simple' ? 'asmjs-simple' : 'asmjs-tigress';
+const buildCmd = mode === 'simple' ? 'npm run docker:build-image-simple' : 'npm run docker:build-image';
+if (!hasDockerImage(imageName)) {
+  console.error(`Docker image ${imageName} not found. Run: ${buildCmd}`);
   process.exit(1);
 }
 
@@ -80,7 +83,7 @@ const emccHard = [
 const cmds = [
   'set -e',
   'mkdir -p build dist/asm',
-  mode === 'fast' ? emccFast : [tigressHard, emccHard].join(' && ')
+  mode === 'fast' || mode === 'simple' ? emccFast : [tigressHard, emccHard].join(' && ')
 ].join(' && ');
 
 const run = spawnSync(
@@ -89,7 +92,7 @@ const run = spawnSync(
     'run', '--rm',
     '-v', `${mount}:/work`,
     '-w', '/work',
-    'asmjs-tigress',
+    imageName,
     'bash', '-lc', cmds
   ],
   { stdio: 'inherit' }

@@ -6,8 +6,10 @@
   "scripts": {
     "clean": "rimraf dist build",
     "docker:build-image": "docker build -t asmjs-tigress -f docker/tigress-emscripten.Dockerfile docker",
+    "docker:build-image-simple": "docker build -t asmjs-simple -f docker/emscripten-only.Dockerfile docker",
     "build:fast": "node scripts/build.mjs fast",
     "build:hard": "node scripts/build.mjs hard",
+    "build:simple": "node scripts/build.mjs simple",
     "serve": "http-server ./ -p 8080 -c-1 -s",
     "test": "playwright install && playwright test"
   },

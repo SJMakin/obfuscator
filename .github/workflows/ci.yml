@@ -22,11 +22,11 @@ jobs:
       - name: Install deps
         run: npm install
 
-      - name: Build Docker image (Emscripten fastcomp + Tigress)
-        run: npm run docker:build-image
+      - name: Build Docker image (Emscripten only - fallback)
+        run: npm run docker:build-image-simple
 
-      - name: Build asm.js (hard/Tigress)
-        run: node scripts/build.mjs hard
+      - name: Build asm.js (simple/no obfuscation)
+        run: node scripts/build.mjs simple
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -37,7 +37,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-hard
+          name: dist-simple
           path: |
             dist/asm/module.js
             public/index.html
