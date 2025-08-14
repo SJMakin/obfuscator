@@ -1,0 +1,20 @@
+{
+  "name": "asmjs-tigress-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist build",
+    "docker:build-image": "docker build -t asmjs-tigress -f docker/tigress-emscripten.Dockerfile docker",
+    "build:fast": "node scripts/build.mjs fast",
+    "build:hard": "node scripts/build.mjs hard",
+    "serve": "http-server ./ -p 8080 -c-1 -s",
+    "test": "playwright install && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "playwright": "^1.45.0",
+    "http-server": "^14.1.1",
+    "rimraf": "^5.0.5"
+  }
+}

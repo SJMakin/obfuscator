@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>asm.js obf harness</title>
+  <style>
+    html, body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
+    #probe { padding: 8px 12px; border: 1px solid #ccc; display: inline-block; border-radius: 6px; }
+    .ok { color: #0a0; }
+  </style>
+</head>
+<body>
+  <h1>asm.js obf harness</h1>
+  <div id="probe">pending</div>
+
+  <!-- Built artifact; create with: npm run build:fast or build:hard -->
+  <script src="/dist/asm/module.js"></script>
+  <script>
+  (function boot() {
+    if (typeof window.createObf !== 'function') {
+      console.error('asm module factory missing: build not found at /dist/asm/module.js');
+      return;
+    }
+    window.createObf().then(function(Module) {
+      try {
+        // Initialize/warm
+        if (typeof Module._init === 'function') Module._init();
+
+        // Call obfuscated routine
+        var checksum = Module.cwrap('checksum', 'number', ['number']);
+        var out = checksum(123456 >>> 0) >>> 0;
+
+        // Expose for tests
+        window.__chk = out;
+
+        // Touch DOM via native bridge (also obfuscated in asm.js)
+        var id = 'probe';
+        Module.cwrap('dom_touch', null, ['string','number'])(id, out);
+
+        var el = document.getElementById(id);
+        if (el) el.classList.add('ok');
+      } catch (e) {
+        console.error('asm init error', e);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

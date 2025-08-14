@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log*
+pnpm-lock.yaml
+yarn.lock
+
+# Build outputs
+dist/
+build/
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+.roo/
+
