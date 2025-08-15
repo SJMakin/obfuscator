@@ -10,21 +10,19 @@ RUN set -eux; \
     > /etc/apt/sources.list; \
   echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until; \
   apt-get -o Acquire::Check-Valid-Until=false update; \
-  apt-get install -y --no-install-recommends ca-certificates curl xz-utils tar make git python; \
+  apt-get install -y --no-install-recommends ca-certificates curl unzip; \
   rm -rf /var/lib/apt/lists/*
 
-ENV TIGRESS_VERSION=3.3
+# Install Tigress 4.0.11 from the working download URL
+ENV TIGRESS_VERSION=4.0.11
 RUN set -eux; \
-  url1="https://tigress.wtf/files/tigress-${TIGRESS_VERSION}-linux-x86_64.tar.xz"; \
-  url2="https://tigress.wtf/files/tigress-${TIGRESS_VERSION}-linux-x86_64.tar.gz"; \
-  mkdir -p /opt/tigress; \
-  if curl -fsSL "$url1" -o /tmp/tigress.tar.xz; then \
-    tar -C /opt/tigress --strip-components=1 -xJf /tmp/tigress.tar.xz; \
-  else \
-    curl -fsSL "$url2" -o /tmp/tigress.tar.gz; \
-    tar -C /opt/tigress --strip-components=1 -xzf /tmp/tigress.tar.gz; \
-  fi; \
-  ln -sf /opt/tigress/tigress /usr/local/bin/tigress
+  url="http://tigress.cs.arizona.edu/cgi-bin/projects/tigress/download.cgi?file=tigress_${TIGRESS_VERSION}-1_all.deb.zip"; \
+  curl -fsSL "$url" -o /tmp/tigress.zip; \
+  cd /tmp; \
+  unzip tigress.zip; \
+  dpkg -i tigress_${TIGRESS_VERSION}-1_all.deb || true; \
+  apt-get install -f -y; \
+  rm -rf /tmp/tigress*
 
 RUN emcc -v && tigress --help | head -n 5
 
